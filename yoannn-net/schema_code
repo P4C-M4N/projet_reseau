@@ -1,25 +1,3 @@
-# projet_reseau
-
-## Yoann network
-
-Following IaC principles.
-Dynamic deployment using vagrant, docker, and virtualbox.
-Do "vagrant up" in order to deploy the LAN architecture.
-
-DONE :
-  - Base Vagrantfile
-  - Base schema with mermaid.js
-
-TO DO :
-  - High level schema draw.io
-  - Add comments
-  - Edit Readme
-  - Ensure connectivity in the LAN
-  - Test and PoC of Reverse Proxy
-    
-[Static schema](yoannn-net/schema_mermaid.png)
-
-```mermaid
 graph TD
     subgraph Interco[Interco]
         style Interco fill:#e6f3ff,stroke:#333,stroke-width:4px
@@ -68,4 +46,3 @@ graph TD
     classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
     classDef vagrantFile fill:#f0e6ff,stroke:#333,stroke-width:2px;
     class VF1,VF2,VF3,VF4 vagrantFile;
-```
