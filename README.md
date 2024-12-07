@@ -10,7 +10,7 @@ Cette branche du projet correspond au travail effectué individuellement par Pie
 
 Voici une illustration de mon architecture :
 
-![Network_Architecture]("medias/pchaveroux_architecture.jpg)
+![Network_Architecture](medias/pchaveroux_architecture.jpg)
 
 ---
 
