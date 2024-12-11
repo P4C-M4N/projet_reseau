@@ -40,7 +40,7 @@ sudo apt install nginx -y
 sudo vi /etc/nginx/sites-available/reverse-proxy
 server {
     listen 80;
-    server_name dmz.example.com;
+    server_name ns.pchaveroux.webserver.com;
 
     location / {
         proxy_pass http://172.16.10.1;

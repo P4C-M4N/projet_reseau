@@ -49,7 +49,7 @@ $TTL    604800
 @       IN      NS      ns.pchaveroux.webserver.com.
 
 ; Adresse IP du serveur DNS
-ns      IN      A       172.16.10.1
+ns      IN      A       172.16.10.2
 
 ; Enregistrement pour pchaveroux.webserver.com
 @       IN      A       172.16.10.1
@@ -60,8 +60,16 @@ options {
     directory "/var/cache/bind";
 
     listen-on { 172.16.10.2; };
-
+    
+    allow-qwery {any;};
+    
     recursion yes;
+    
+    forwarders {
+        150.150.150.1;  
+    };
+
+    forward only;
 };
 
 
