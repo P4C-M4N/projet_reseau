@@ -2,8 +2,9 @@
 
 ## Yoann network
 
-### How-to :
 Dynamic deployment of the "entreprise network" using **vagrant, virtualbox and docker**.
+
+### How-to :
 Do "sudo vagrant up" in the folder of the "Vagrantfile" order to deploy the LAN architecture.
 
 ### Technical choices : 
