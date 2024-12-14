@@ -19,6 +19,11 @@ The following method also offered some reassurance as we knew that if something 
 
 I chose to use a mix of both virtualbox and docker in deployment, docker hosting web services while the rest is deployed in VMs.
 
+#### Services
+
+#### Issues
+
+
 ### Tasks : 
 DONE :
   - Base Vagrantfile
