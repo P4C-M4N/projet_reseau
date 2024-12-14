@@ -17,7 +17,7 @@ The commented Vagrantfile contains the project, an introduction to "entreprise a
 
 The following method also offered some reassurance as we knew that if something would fail (perhaps a corrupted VM), we would have the Vagrantfile as a Source of Truth when it came to the multiple configurations of our devices and hosts.
 
-I chose to use a mix of both virtualbox and docker in deployment, docker hosting web services while the reste is deployed in VMs.
+I chose to use a mix of both virtualbox and docker in deployment, docker hosting web services while the rest is deployed in VMs.
 
 ### Tasks : 
 DONE :
