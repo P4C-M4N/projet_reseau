@@ -60,48 +60,33 @@ sudo nginx -t
 sudo systemctl restart nginx
 
 ##IPTables
-
 ### Reset Existing Rules
 sudo iptables -F
 sudo iptables -t nat -F
-
-### LAN Rules
 
 #### Set Default Policies
 sudo iptables -P INPUT ACCEPT
 sudo iptables -P OUTPUT ACCEPT
 sudo iptables -P FORWARD DROP
 
+### Enable NAT between LAN and WAN
+sudo iptables -t nat -A POSTROUTING -o enp0s10 -j MASQUERADE
+
 #### Allow traffic from the LAN to the DMZ
-sudo iptables -A FORWARD -i enp0s8 -o enp0s9 -p icmp -j ACCEPT 
-sudo iptables -A FORWARD -i enp0s9 -o enp0s8 -p icmp -j ACCEPT 
-sudo iptables -A FORWARD -i enp0s8 -o enp0s9 -p tcp --dport 80 -j ACCEPT
-sudo iptables -A FORWARD -i enp0s9 -o enp0s8 -p tcp --sport 80 -j ACCEPT
-sudo iptables -A FORWARD -i enp0s8 -o enp0s9 -p udp --dport 53 -j ACCEPT
-sudo iptables -A FORWARD -i enp0s9 -o enp0s8 -p udp --sport 53 -j ACCEPT
+sudo iptables -A FORWARD -p icmp -j ACCEPT
+sudo iptables -A FORWARD -i enp0s8 -o enp0s9 -p tcp -j ACCEPT
+sudo iptables -A FORWARD -i enp0s9 -o enp0s8 -p tcp -j ACCEPT
+sudo iptables -A FORWARD -i enp0s8 -o enp0s9 -p udp -j ACCEPT
+sudo iptables -A FORWARD -i enp0s9 -o enp0s8 -p udp -j ACCEPT
 
 #### Allow traffic between Internet and the DMZ (Web and DNS)
-sudo iptables -A FORWARD -i enp0s10 -o enp0s9 -p tcp --dport 80 -j ACCEPT 
-sudo iptables -A FORWARD -i enp0s9 -o enp0s10 -p tcp --sport 80 -j ACCEPT 
-sudo iptables -A FORWARD -i enp0s10 -o enp0s9 -p udp --dport 53 -j ACCEPT 
-sudo iptables -A FORWARD -i enp0s9 -o enp0s10 -p udp --sport 53 -j ACCEPT
+sudo iptables -A FORWARD -i enp0s9 -o enp0s10 -p udp --dport 53 -j ACCEPT
+sudo iptables -A FORWARD -i enp0s10 -o enp0s9 -p udp --sport 53 -j ACCEPT
 
 #### Allow clients to access the internet
-sudo iptables -A FORWARD -i enp0s10 -o enp0s8 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-sudo iptables -A FORWARD -i enp0s8 -o enp0s10 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-sudo iptables -A FORWARD -i enp0s10 -o enp0s8 -j DROP
-
-### Enable NAT between clients and Net
-sudo iptables -t nat -A POSTROUTING -o enp0s10 -j MASQUERADE
+sudo iptables -A FORWARD -i enp0s8 -o enp0s10 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+sudo iptables -A FORWARD -i enp0s10 -o enp0s8 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
 ### Saving Rules
 sudo iptables-save > /etc/iptables/rules.v4
-sudo iptables -L -v
-
-# GUI Configuration for Wireshark 
-sudo apt install xfce4 xfce4-goodies
-sudo apt install xinit
-sudo apt install wireshark
-
-## GUI Starting 
-startx -- -verbose 5 -logverbose 5
+sudo iptables -L -v 

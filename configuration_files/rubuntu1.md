@@ -34,6 +34,11 @@ network:
 '''
 sudo netplan apply 
 
+# Static DNS Configuration
+sudo vi /etc/systemd/resolved.conf
+[Resolve]
+DNS=172.16.10.2
+
 # IP Routing Activation
 sudo sysctl -w net.ipv4.ip_forward=1
 echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf

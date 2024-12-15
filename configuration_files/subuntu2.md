@@ -55,21 +55,22 @@ ns      IN      A       172.16.10.2
 @       IN      A       172.16.10.1
 '''
 
-## Allowing DNS queries
+## Allowing DNS queries and fallback 
 options {
     directory "/var/cache/bind";
 
-    listen-on { 172.16.10.2; };
-    
-    allow-qwery {any;};
-    
     recursion yes;
+    allow-query {any;};
     
     forwarders {
-        150.150.150.1;  
+        150.150.150.254;  
     };
-
     forward only;
+    max-recursion-queries 10;
+    max-recursion-depth 5;
+    
+    dnssec-validation no;
+    
 };
 
 
