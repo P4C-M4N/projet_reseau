@@ -105,9 +105,9 @@ Detailed configurations for each device:
 - **Client #2 (Employees)**: [cubuntu2](configuration_files/cubuntu2.md). 
 - **Router #1 (Private Network + DHCP)**: [rubuntu1](configuration_files/rubuntu1.md). 
 - **Router #2 (Public Network + Proxy + Firewall)**: [rubuntu2](configuration_files/rubuntu2.md). 
-- **Web Server**: [subuntu1](configuration_files/sububuntu1.md). 
-- **DNS Server**: [subuntu2](configuration_files/sububuntu2.md). 
-- **Fallback DNS Server**: [sububuntu3](configuration_files/sububuntu3.md). 
+- **Web Server**: [subuntu1](configuration_files/subuntu1.md). 
+- **DNS Server**: [subuntu2](configuration_files/subuntu2.md). 
+- **Fallback DNS Server**: [subuntu3](configuration_files/subuntu3.md). 
 
 ---
 
