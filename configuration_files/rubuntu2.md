@@ -84,6 +84,8 @@ sudo iptables -A FORWARD -i enp0s9 -o enp0s10 -p udp --dport 53 -j ACCEPT
 sudo iptables -A FORWARD -i enp0s10 -o enp0s9 -p udp --sport 53 -j ACCEPT
 
 #### Allow clients to access the internet
+sudo iptables -A FORWARD -i enp0s8 -o enp0s10 -p tcp --dport 80 -j ACCEPT
+sudo iptables -A FORWARD -i enp0s10 -o enp0s8 -p tcp --sport 80 -j ACCEPT
 sudo iptables -A FORWARD -i enp0s8 -o enp0s10 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 sudo iptables -A FORWARD -i enp0s10 -o enp0s8 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
