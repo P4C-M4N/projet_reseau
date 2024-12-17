@@ -2,7 +2,8 @@
 
 ## Global Network Topology
 
-## 
-Pierre's Topology : [here](./README-Pierre).
-Thomas's Topology : [here](./README-Thomas).
-Yoann's Topology : [here](./README-Yoann).
+## Below links to LAN topologies of the members of the project
+
+### Pierre's Topology : [here](./README-Pierre).
+### Thomas's Topology : [here](./README-Thomas).
+### Yoann's Topology : [here](./README-Yoann).
