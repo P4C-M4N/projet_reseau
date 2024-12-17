@@ -90,7 +90,7 @@ graph TB
     WAN <==> EdgeRouter
 
     classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px,color:black;
-    classDef vagrantFile fill:#f0e6ff,stroke:#333,stroke-width:2px,color:black;
+    classDef vagrantFile fill:#fff0e6,stroke:#333,stroke-width:4px,color:black;
     
     %% Set specific colors for subnet labels to black
     class DMZ default;
