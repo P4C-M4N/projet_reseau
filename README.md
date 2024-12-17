@@ -45,7 +45,7 @@ graph TD
         EdgeRouter[Edge Router<br>192.169.1.1<br>42.42.42.1]
         subgraph RouterServices[Router Services]
             style RouterServices fill:#e6ffe6,stroke:#333,stroke-width:2px
-            Nginx ReverseProxy["Proxy<br>Port: 80"]
+            NginxReverseProxy["Proxy<br>Port: 80"]
         end
     end
 
