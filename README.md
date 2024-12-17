@@ -45,18 +45,24 @@ graph TB
         style VagrantFile fill:#fff0e6,stroke:#333,stroke-width:4px
         VF1["config.vm.define 'edge-router'"]
         VF2["config.vm.define 'services'"]
-        VF3["config.vm.define 'client'"]
+        VF3["config.vm.define 'lan-client'"]
     end
 
     subgraph PersonalNetwork[Personal Network Topology]
         direction TB
+        subgraph WAN[WAN: 150.150.150.0/24]
+            style WAN fill:#e6f3ff,stroke:#333,stroke-width:4px
+            WANRouter[WAN Router<br>150.150.150.1]
+        end
+
         subgraph Interco[Interco]
             style Interco fill:#e6f3ff,stroke:#333,stroke-width:4px
-            EdgeRouter[Edge Router<br>192.169.1.1<br>42.42.42.1]
+            EdgeRouter[Edge Router<br>WAN: 150.150.150.3<br>DMZ: 192.169.1.1<br>LAN: 42.42.42.1]
             subgraph RouterServices[Router Services]
                 style RouterServices fill:#e6ffe6,stroke:#333,stroke-width:2px
-                NginxReverseProxy["Proxy<br>Port: 80"]
+                NginxProxy["Nginx Reverse Proxy<br>Port: 80"]
                 IPTables["IPTables"]
+                DHCP["DHCP Server<br>LAN Range: 42.42.42.100-254"]
             end
         end
 
@@ -68,33 +74,28 @@ graph TB
                 Web1["Web1<br>Port: 8081"]
                 Web2["Web2<br>Port: 8082"]
                 Edgeshark["Edgeshark<br>Port: 5001"]
+                DNS["BIND DNS Server"]
             end
         end
 
         subgraph LAN[LAN: 42.42.42.0/24]
             style LAN fill:#ffe6e6,stroke:#333,stroke-width:4px
-            Client[Client<br>42.42.42.100]
+            Client[LAN Client<br>42.42.42.100]
         end
     end
 
-    WAN[WAN Interconnection]
-
-    Interco <==> EdgeRouter
+    WANRouter <==> EdgeRouter
     EdgeRouter <==> Client
     EdgeRouter <==> Services
     Services --- DockerServices
-    DockerServices --- Web1 & Web2 & Edgeshark
+    DockerServices --- Web1 & Web2 & Edgeshark & DNS
     VF1 -.-> EdgeRouter
     VF2 -.-> Services
     VF3 -.-> Client
-    WAN <==> EdgeRouter
 
     classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px,color:black;
     classDef vagrantFile fill:#fff0e6,stroke:#333,stroke-width:4px,color:black;
     
-    %% Set specific colors for subnet labels to black
-    class DMZ default;
-    class LAN default;
-    class VagrantFile default;
-    class Interco default;
+    class DMZ,LAN,WAN default;
+    class VagrantFile,Interco default;
 ```
