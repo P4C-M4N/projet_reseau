@@ -75,17 +75,15 @@ graph TD
     end
 
     Interco --- EdgeRouter
-    EdgeRouter --- NginxProxy
     EdgeRouter --- Client
-    NginxProxy --- Services
+    EdgeRouter --- Services
     Services --- DockerServices
-    DockerServices --- Web1 & Web2 & Webserver & Bind9 & Edgeshark
+    DockerServices --- Web1 & Web2 & Edgeshark
     VF1 -.-> EdgeRouter
-    VF2 -.-> NginxProxy
-    VF3 -.-> Services
-    VF4 -.-> Client
+    VF2 -.-> Services
+    VF3 -.-> Client
 
     classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
     classDef vagrantFile fill:#f0e6ff,stroke:#333,stroke-width:2px;
-    class VF1,VF2,VF3,VF4 vagrantFile;
+    class VF1,VF2,VF3 vagrantFile;
 ```
