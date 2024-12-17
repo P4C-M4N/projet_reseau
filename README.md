@@ -44,10 +44,8 @@ graph TD
         style Interco fill:#e6f3ff,stroke:#333,stroke-width:4px
         EdgeRouter[Edge Router<br>192.169.1.1<br>42.42.42.1]
         subgraph RouterServices[Router Services]
-            style DockerServices fill:#e6ffe6,stroke:#333,stroke-width:2px
-            Nginx Reverse-proxy["Web1<br>Port: 8081"]
-            ["Web2<br>Port: 8082"]
-            Edgeshark["Edgeshark<br>Port: 5001"]
+            style RouterServices fill:#e6ffe6,stroke:#333,stroke-width:2px
+            Nginx ReverseProxy["Proxy<br>Port: 80"]
         end
     end
 
