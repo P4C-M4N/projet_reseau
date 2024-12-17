@@ -16,24 +16,6 @@ Quick commands for capturing **DNS**, **WEB**, **ping**, and **curl** traffic.
 ## **1. DNS Traffic**
 
 - **All DNS (UDP & TCP)**:  
-  `sudo tcpdump -i <interface> udp port 53 or tcp port 53 -nn`  # **TCPDUMP COMMANDS CHEATSHEET**
-
-Quick commands for capturing **DNS**, **WEB**, **ping**, and **curl** traffic.
-
----
-
-## **General Syntax**
-
-`sudo tcpdump -i <interface> [filters] -nn`  
-- `-i <interface>`: Network interface (e.g., eth0, enp0s9).  
-- `-nn`: No name resolution.  
-- `-w <file.pcap>`: Save to file.  
-
----
-
-## **1. DNS Traffic**
-
-- **All DNS (UDP & TCP)**:  
   `sudo tcpdump -i <interface> udp port 53 or tcp port 53 -nn`  
 
 - **Requests Only**:  
