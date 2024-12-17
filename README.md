@@ -76,17 +76,16 @@ graph LR
         end
     end
 
-    Interco --- EdgeRouter
-    EdgeRouter --- Client
-    EdgeRouter --- Services
+    Interco <==> EdgeRouter
+    EdgeRouter <==> Client
+    EdgeRouter <==> Services
     Services --- DockerServices
     DockerServices --- Web1 & Web2 & Edgeshark
     VF1 -.-> EdgeRouter
     VF2 -.-> Services
     VF3 -.-> Client
 
-    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
-    classDef vagrantFile fill:#f0e6ff,stroke:#333,stroke-width:2px;
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px,color:black;
+    classDef vagrantFile fill:#f0e6ff,stroke:#333,stroke-width:2px,color:black;
     class VF1,VF2,VF3 vagrantFile;
-
 ```
