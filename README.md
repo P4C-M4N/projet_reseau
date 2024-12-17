@@ -91,5 +91,8 @@ graph TB
 
     classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px,color:black;
     classDef vagrantFile fill:#f0e6ff,stroke:#333,stroke-width:2px,color:black;
-    class VF1,VF2,VF3 vagrantFile;
+    
+    %% Set specific colors for subnet labels to black
+    class DMZ default;
+    class LAN default;
 ```
