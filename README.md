@@ -5,6 +5,6 @@ This project is the fruit of the collaboration of Pierre Chaveroux, Thomas Sylve
 
 ## vvvBelow links to LAN topologies of the members of the projectvvv
 
-### Pierre's Topology : [here](./README-Pierre).
-### Thomas's Topology : [here](./README-Thomas).
-### Yoann's Topology : [here](./README-Yoann).
+### Pierre's Topology : [here](./README-Pierre.md).
+### Thomas's Topology : [here](./README-Thomas.md).
+### Yoann's Topology : [here](./README-Yoann.md).
