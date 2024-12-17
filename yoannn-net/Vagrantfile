@@ -1,3 +1,18 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrant setup to use virtualbox and have a base config of the VMs
+Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = false
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+  config.ssh.insert_key = false
+  config.vm.boot_timeout = 600
+  config.vm.box_check_update = false
+
   # Define the edge-router VM
   config.vm.define "edge-router" do |router|
     router.vm.box = "debian/bullseye64"
@@ -33,6 +48,47 @@ EOL
 
       # Start DHCP server
       systemctl restart isc-dhcp-server
+
+      ### IPTABLES RULES
+      ## Flush existing rules
+      iptables -F
+      iptables -X
+      iptables -t nat -F
+      iptables -t nat -X
+
+      # Set default policies
+      iptables -P INPUT ACCEPT
+      iptables -P OUTPUT ACCEPT
+      iptables -P FORWARD DROP
+
+      # Enable NAT between LAN and WANEdit Readme
+      iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+
+      # Allow traffic from the LAN to the DMZ
+      iptables -A FORWARD -p icmp -j ACCEPT
+      iptables -A FORWARD -i eth3 -o eth2 -p tcp -j ACCEPT
+      iptables -A FORWARD -i eth2 -o eth3 -p tcp -j ACCEPT
+      iptables -A FORWARD -i eth3 -o eth2 -p udp -j ACCEPT
+      iptables -A FORWARD -i eth2 -o eth3 -p udp -j ACCEPT
+
+      # Allow traffic between Internet and the DMZ (DNS)
+      iptables -A FORWARD -i eth2 -o eth1 -p udp --dport 53 -j ACCEPT
+      iptables -A FORWARD -i eth1 -o eth2 -p udp --sport 53 -j ACCEPT
+
+      # Allow traffic between Client and the DMZ (DNS + HTTP)
+      iptables -A FORWARD -i eth3 -o eth2 -p udp --dport 53 -j ACCEPT
+      iptables -A FORWARD -i eth2 -o eth3 -p udp --sport 53 -j ACCEPT
+      iptables -A FORWARD -i eth3 -o eth2 -p udp --dport 80 -j ACCEPT
+      iptables -A FORWARD -i eth2 -o eth3 -p udp --sport 80 -j ACCEPT
+
+      # Allow clients to access the internet
+      iptables -A FORWARD -i eth3 -o eth1 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+      iptables -A FORWARD -i eth1 -o eth3 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+      # Display the rules to verify
+      iptables -L -v
+      iptables -t nat -L -v
+
       # Setup nginx
       mkdir -p /etc/nginx/conf.d
       cat > /etc/nginx/nginx.conf <<EOL
@@ -160,6 +216,71 @@ SHELL
           echo "Failed to start web2 container."
           exit 1
       fi
+
+      # Create index.html files for each web nginx service.
+      echo "<h1>Welcome to Web1</h1>" > /home/vagrant/services/web1/index.html 
+      echo "<h1>Welcome to Web2</h1>" > /home/vagrant/services/web2/index.html 
+
+      #DNS config
+      cat > /etc/bind/named.conf.local <<'EOL'
+        zone "yfrancois.webserver.com" {
+          type master;
+          file "/etc/bind/db.yfrancois.webserver.com";
+        };
+EOL
+      # Create db.example.com zone file
+      cat > /etc/bind/db.yfrancois.webserver.com <<'EOL'
+$TTL    604800
+@       IN      SOA     yfrancois.webserver.com. admin.yfrancois.webserver.com. (
+                        2023113001 ; Serial
+                        604800     ; Refresh
+                        86400      ; Retry
+                        2419200    ; Expire
+                        604800 )   ; Negative Cache TTL
+
+; Nom de serveur DNS
+@       IN      NS      ns.yfrancois.webserver.com.
+
+; Adresse IP du serveur DNS
+ns      IN      A       192.169.1.20
+
+; Enregistrement pour yfrancois.webserver.com
+@       IN      A       192.169.1.20
+
+web1    IN     A        155.155.155.3
+
+web2    IN     A        155.155.155.3
+
+edgeshark IN   A        155.155.155.3
+EOL
+
+# Create db.example.com zone file
+cat > /etc/bind/named.conf.options <<EOL
+\options {
+    directory "/var/cache/bind";
+
+    listen-on { 192.169.1.20; };
+
+    allow-query { any; };
+    recursion yes;
+
+    forwarders {
+        150.150.150.254;  
+    };
+    forward only;
+    max-recursion-queries 10;
+    max-recursion-depth 5;
+    
+    dnssec-validation no;
+};
+EOL
+      # Restart BIND9 to apply changes
+      #chown bind:bind /etc/bind/db.yfrancois.webserver.com
+      #chmod 644 /etc/bind/zones/db.yfrancois.webserver.com
+      # Change ownership to bind user and group
+      #sudo chown bind:bind /etc/bind/zones/db.yfrancois.webserver.com
+      sudo chown bind:bind /etc/bind/named.conf.local
+
       # Set appropriate permissions
       #sudo chmod 644 /etc/bind/zones/db.yfrancois.webserver.com
       sudo chmod 644 /etc/bind/named.conf.local
@@ -169,6 +290,44 @@ SHELL
       ip route add default via 192.169.1.1 #default route to the edge router
 SHELL
 end
+
+  ## The external client is for debug purpose.
+  ## Helpful when it comes to visualising what happens on my side of the architecture.
+  # # Define external client
+  # config.vm.define "external-client" do |client|
+  #   client.vm.box = "bento/ubuntu-22.04"
+  #   client.vm.hostname = "external-client"
+  #   client.vm.network "private_network", ip: "150.150.150.10", virtualbox__intnet: "WAN"
+
+  #   client.vm.provision "shell", inline: <<-SHELL
+  #     apt-get update
+  #     apt-get install -y w3m curl dnsutils
+  #     echo "nameserver 192.169.1.20" > /etc/resolv.conf
+  #     ip route del default
+  #     ip route add default via 10.0.0.1
+  #     # Add routes for services
+  #     ip route add 192.168.1.0/24 via 10.0.0.1
+
+  #   SHELL
+  # end
+
+  # # Define external client
+  # config.vm.define "external-client" do |client|
+  #   client.vm.box = "bento/ubuntu-22.04"
+  #   client.vm.hostname = "external-client"
+  #   client.vm.network "private_network", ip: "10.0.0.100", virtualbox__intnet: "WAN"
+
+  #   client.vm.provision "shell", inline: <<-SHELL
+  #     apt-get update
+  #     apt-get install -y w3m curl dnsutils
+  #     echo "nameserver 192.169.1.20" > /etc/resolv.conf
+  #     ip route del default
+  #     ip route add default via 10.0.0.1
+  #     # Add routes for services
+  #     ip route add 192.168.1.0/24 via 10.0.0.1
+  #   SHELL
+  # end
+
   # Define LAN client
   config.vm.define "lan-client" do |client|
     client.vm.box = "debian/bullseye64"
@@ -177,14 +336,20 @@ end
     #client.vm.network "private_network", type: "dhcp", virtualbox__intnet: "LAN"
     client.vm.provision "shell", inline: <<-SHELL
       apt-get update
-      apt-get install -y curl w3m dnsutils wireshark-gtk
+      apt-get install -y curl w3m dnsutils
+      
         #wireshark
       tasksel install xfce-desktop
       echo "nameserver 192.169.1.20" > /etc/resolv.conf # static DNS server 
-      #ip route del default via 
+      ip route del default
       ip route add default via 42.42.42.1 # static default GW
       # Add routes for services
       ip route add 192.168.1.0/24 via 42.42.42.1
     SHELL
   end
 end
+
+##After boot
+# ifdown eth0 # Deactivate NAT port used for provisionning the VM
+# ifdown eth1
+# ifup eth1 # Activate the interface to get an IP address from the DHCP server
