@@ -19,7 +19,19 @@ The following method also offered some reassurance as we knew that if something 
 
 I chose to use a mix of both virtualbox and docker in deployment, docker hosting web services while the rest is deployed in VMs for ease of configuration on critical services (DNS and Reverse Proxy).
 
-#### Services
+#### Services Topology
+| Service Name       | Description                                    | IP Address         | Ports              |
+|--------------------|------------------------------------------------|---------------------|--------------------|
+| **Edge Router**     | Main router connecting WAN, DMZ, and LAN      | WAN: 150.150.150.3 <br> DMZ: 192.169.1.1 <br> LAN: 42.42.42.1 | -                  |
+| **Nginx Reverse Proxy** | Proxy for routing requests to services    | 192.169.1.1        | Port 80            |
+| **DHCP Server**     | Provides IP addresses to LAN clients           | 192.169.1.1        | -                  |
+| **Services VM**     | Hosts various services including web servers   | 192.169.1.20       | Port 80 (Apache) <br> Port 8081 (Web1) <br> Port 8082 (Web2) <br> Port 5001 (Edgeshark) |
+| **Web1**            | Nginx web server for Web1 application          | 192.169.1.20       | Port 8081          |
+| **Web2**            | Nginx web server for Web2 application          | 192.169.1.20       | Port 8082          |
+| **Edgeshark**       | Service for network packet capturing            | 192.169.1.20       | Port 5001          |
+| **BIND DNS Server** | DNS service for name resolution                 | 192.169.1.20       | -                  |
+| **LAN Client**      | Client in the LAN network                       | 42.42.42.100       | -                  |
+
 
 #### Issues
 
