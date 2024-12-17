@@ -42,7 +42,7 @@ TO DO :
 graph TB
     subgraph VagrantFile[VagrantFile Deployment]
         direction TB
-        style VagrantFile fill:#f0e6ff,stroke:#333,stroke-width:2px
+        style VagrantFile fill:#000000,stroke:#333,stroke-width:2px
         VF1["config.vm.define 'edge-router'"]
         VF2["config.vm.define 'services'"]
         VF3["config.vm.define 'client'"]
@@ -51,7 +51,7 @@ graph TB
     subgraph PersonalNetwork[Personal Network Topology]
         direction TB
         subgraph Interco[Interco]
-            style Interco fill:#e6f3ff,stroke:#333,stroke-width:4px
+            style Interco fill:#000000,stroke:#333,stroke-width:4px
             EdgeRouter[Edge Router<br>192.169.1.1<br>42.42.42.1]
             subgraph RouterServices[Router Services]
                 style RouterServices fill:#e6ffe6,stroke:#333,stroke-width:2px
@@ -61,7 +61,7 @@ graph TB
         end
 
         subgraph DMZ[DMZ: 192.169.1.0/24]
-            style DMZ fill:#fff0e6,stroke:#333,stroke-width:4px
+            style DMZ fill:#000000,stroke:#333,stroke-width:4px
             Services[Services VM<br>192.169.1.20]
             subgraph DockerServices[Docker Services]
                 style DockerServices fill:#e6ffe6,stroke:#333,stroke-width:2px
@@ -72,7 +72,7 @@ graph TB
         end
 
         subgraph LAN[LAN: 42.42.42.0/24]
-            style LAN fill:#ffe6e6,stroke:#333,stroke-width:4px
+            style LAN fill:#000000,stroke:#333,stroke-width:4px
             Client[Client<br>42.42.42.100]
         end
     end
