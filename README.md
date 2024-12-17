@@ -42,7 +42,7 @@ TO DO :
 graph TB
     subgraph VagrantFile[VagrantFile Deployment]
         direction TB
-        style VagrantFile fill:#f0e6ff,stroke:#333,stroke-width:2px
+        style VagrantFile fill:#fff0e6,stroke:#333,stroke-width:4px
         VF1["config.vm.define 'edge-router'"]
         VF2["config.vm.define 'services'"]
         VF3["config.vm.define 'client'"]
