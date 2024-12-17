@@ -95,4 +95,5 @@ graph TB
     %% Set specific colors for subnet labels to black
     class DMZ default;
     class LAN default;
+    class VagrantFile default;
 ```
