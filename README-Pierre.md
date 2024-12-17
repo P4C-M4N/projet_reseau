@@ -10,7 +10,7 @@ This branch corresponds to the individual work carried out by **Pierre Chaveroux
 
 Below is an illustration of my implemented network architecture: 
 
-![Network_Architecture](medias/pchaveroux_architecture.jpg)
+![Network_Architecture](ressources/pchaveroux_architecture.jpg)
 
 ---
 
@@ -108,6 +108,8 @@ Detailed configurations for each device:
 - **Web Server**: [subuntu1](configuration_files/subuntu1.md). 
 - **DNS Server**: [subuntu2](configuration_files/subuntu2.md). 
 - **Fallback DNS Server**: [subuntu3](configuration_files/subuntu3.md). 
+
+TCPDUMP Command Sheet : [tcpdump](ressources/tcpdump_sheet.md).
 
 ---
 

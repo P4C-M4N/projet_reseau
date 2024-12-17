@@ -47,11 +47,15 @@ $TTL    86400
 
         IN      NS      ns1.webserver.com.
 
-tsilvestre     IN      A       150.150.150.1
-pchaveroux     IN      A       150.150.150.2
-yfrancois      IN      A       150.150.150.3
+tsilvestre                  IN      A       150.150.150.1
+pchaveroux                  IN      A       150.150.150.2
 
-ns1            IN      A       150.150.150.254
+yfrancois                   IN      A       150.150.150.3
+web1.yfrancois              IN      A       150.150.150.3
+web2.yfrancois              IN      A       150.150.150.3
+edgeshark.yfrancois         IN      A       150.150.150.3
+
+ns1                         IN      A       150.150.150.254
 '''
 
 ## Allowing DNS queries
