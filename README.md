@@ -124,6 +124,6 @@ graph TB
 
 ## Vagrantfile
 
-You can view the Vagrantfile [here](./code/Vagrantfile).
+You can view the Vagrantfile [here](./yfrancois-net/Vagrantfile).
 It is commented and easily understandable, centralizing the whole LAN configuration.
 
