@@ -121,3 +121,11 @@ graph TB
     class DMZ,LAN,WAN default;
     class VagrantFile,Interco default;
 ```
+
+## Vagrantfile
+
+You can view the Vagrantfile [here](./code/Vagrantfile).
+
+### Vagrantfile Content
+
+
