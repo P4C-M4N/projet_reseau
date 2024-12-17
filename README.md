@@ -96,4 +96,5 @@ graph TB
     class DMZ default;
     class LAN default;
     class VagrantFile default;
+    class EdgeRouter default;
 ```
