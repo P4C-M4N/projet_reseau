@@ -52,7 +52,7 @@ graph TB
         direction TB
         subgraph WAN[WAN: 150.150.150.0/24]
             style WAN fill:#e6f3ff,stroke:#333,stroke-width:4px
-            WANRouter[WAN Router]
+            WANRouter[WAN Routers]
         end
 
         subgraph Interco[Interco]
