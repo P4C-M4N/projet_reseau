@@ -18,6 +18,16 @@ The commented Vagrantfile contains the project, an introduction to "entreprise a
 The following method also offered some reassurance as we knew that if something would fail (perhaps a corrupted VM), we would have the Vagrantfile as a Source of Truth when it came to the multiple configurations of our devices and hosts.
 
 I chose to use a mix of both virtualbox and docker in deployment, docker hosting web services while the rest is deployed in VMs for ease of configuration on critical services (DNS and Reverse Proxy).
+#### Services choices
+| Service Name       | Description                                    | Reason for Choice |
+|--------------------|------------------------------------------------|-------------------|
+| Nginx Reverse Proxy| Proxy for routing requests to services         | Mainstream reverse-proxy. Used it instead of Traefik for ease of use and lots of tutorials on the web.  |
+| DHCP Server        | Provides IP addresses to LAN clients           | Automates IP address assignment in LAN with dhcpd. |
+| Web1 (Nginx)       | Web server for Web1 application                | Demonstrates multiple web service deployment. |
+| Web2 (Nginx)       | Web server for Web2 application                | - |
+| Edgeshark          | Network packet capturing service               | Provides network analysis and troubleshooting capabilities on the docker layer with wireshark and pretty web UI. |
+| BIND DNS Server    | DNS service for name resolution                | Enables custom domain name resolution within the network. Textbook choice. |
+| IPTables           | Firewall and NAT service                       | Essential for network security and routing between subnets. Used nftables at first but changed back to iptables for uniformity. |
 
 #### Services Topology
 | Service Name       | Description                                    | IP Address         | Ports              |
