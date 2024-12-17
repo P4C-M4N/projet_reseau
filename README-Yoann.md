@@ -1,5 +1,3 @@
-# Entreprise Network setup (N5AN01B - Protocoles de l'Internet - Mise en place d’un réseau « d’entreprise »)
-
 ## Yoann's network
 
 Dynamic deployment of the "entreprise network" using **vagrant, virtualbox and docker**.
