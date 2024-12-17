@@ -1,0 +1,190 @@
+  # Define the edge-router VM
+  config.vm.define "edge-router" do |router|
+    router.vm.box = "debian/bullseye64"
+    router.vm.hostname = "edge-router"
+    router.vm.network "public_network", ip: "150.150.150.3" # WAN (here the interconnection with Thomas and Pierre)
+    router.vm.network "private_network", ip: "192.169.1.1", virtualbox__intnet: "DMZ"
+    router.vm.network "private_network", ip: "42.42.42.1", virtualbox__intnet: "LAN"
+
+    router.vm.provision "shell", inline: <<-SHELL # Shell commands up until the "SHELL" keyword
+      apt-get update
+      apt-get install -y iptables nginx curl isc-dhcp-server 
+
+      # Enable IP forwarding
+      echo 1 > /proc/sys/net/ipv4/ip_forward
+      echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+      sysctl -p
+
+      # Configure DHCP server
+      cat > /etc/dhcp/dhcpd.conf <<EOL
+        subnet 42.42.42.0 netmask 255.255.255.0 {
+          range 42.42.42.100 42.42.42.254;
+          option routers 42.42.42.1;
+          option domain-name-servers 192.169.1.20;
+          option subnet-mask 255.255.255.0;
+          default-lease-time 600;
+          max-lease-time 7200;
+        }
+EOL
+      # troubleshoot client-side : cat /var/lib/dhcp/dhclient.leases
+
+      # Set the interface for DHCP server
+      sed -i 's/INTERFACESv4=""/INTERFACESv4="eth3"/' /etc/default/isc-dhcp-server
+
+      # Start DHCP server
+      systemctl restart isc-dhcp-server
+      # Setup nginx
+      mkdir -p /etc/nginx/conf.d
+      cat > /etc/nginx/nginx.conf <<EOL
+      user www-data;
+      worker_processes auto;
+      error_log /var/log/nginx/error.log;
+      pid /run/nginx.pid;
+
+      events {
+          worker_connections 1024;
+      }
+
+      http {
+          include             /etc/nginx/mime.types;
+          default_type        application/octet-stream;
+
+          include /etc/nginx/conf.d/*.conf;
+      }
+EOL
+      #Default webpage indicating error 404 for any request that is associated to the below subdomains.
+      cat > /etc/nginx/conf.d/default.conf <<'EOL'
+      server {
+          listen 80 default_server;
+          server_name _;
+
+          location / {
+              return 404;
+          }
+      }
+EOL
+      #'EOL' is bash specificity to make sure the $variables are not interpreted up until the "End Of File" string
+      cat > /etc/nginx/conf.d/web1.conf <<'EOL'
+      server {
+          listen 80;
+          server_name web1.yfrancois.webserver.com;
+
+          location / {
+              proxy_pass http://192.169.1.20:8081;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+          }
+      }
+EOL
+
+      cat > /etc/nginx/conf.d/web2.conf <<'EOL'
+      server {
+          listen 80;
+          server_name web2.yfrancois.webserver.com;
+
+          location / {
+              proxy_pass http://192.169.1.20:8082;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+          }
+      }
+EOL
+
+      cat > /etc/nginx/conf.d/edgeshark.conf <<'EOL'
+      server {
+          listen 80;
+          server_name edgeshark.yfrancois.webserver.com;
+
+          location / {
+              proxy_pass http://192.169.1.20:5001;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+          }
+      }
+EOL
+      # Restart nginx to apply the new configuration
+      systemctl restart nginx
+      echo "nameserver 192.169.1.20" > /etc/resolv.conf
+      ip route del default
+SHELL
+  end
+
+  # Define the services VM with Edgeshark and other services.
+  config.vm.define "services" do |services|
+    services.vm.box = "debian/bullseye64"
+    services.vm.hostname = "services"
+    services.vm.network "private_network", ip: "192.169.1.20", virtualbox__intnet: "DMZ"
+
+    # Set up port forwarding for services in this VM.
+    services.vm.network "forwarded_port", guest: 80, host: 8080 # For webserver (Apache) 
+    services.vm.network "forwarded_port", guest: 8081, host: 8081 # For web1 (Nginx)
+    services.vm.network "forwarded_port", guest: 8082, host: 8082 # For web2 (Nginx)
+    services.vm.network "forwarded_port", guest: 5001, host: 5001 # For Edgeshark
+
+    services.vm.provision "shell", inline: <<-SHELL
+      # Update and install necessary packages.
+      apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release docker.io bind9 bind9utils bind9-doc
+
+      # Add vagrant user to the docker group.
+      usermod -aG docker vagrant
+      
+      # Create necessary directories for services.
+      mkdir -p /home/vagrant/services/web1 /home/vagrant/services/web2 /home/vagrant/services/webserver
+
+      # Create necessary directories for BIND configuration.
+      mkdir -p /etc/bind/zones
+      
+      # Add routes for WAN and LAN networks and default gateway.
+      ip route add 150.150.150.0/24 via 192.169.1.1
+      ip route add 42.42.42.0/24 via 192.169.1.1
+      ip route add add 192.169.1.0/24 via 192.169.1.1
+
+      # Install Edgeshark using t    #router.vm.network "forwarded_port", guest: 80, host: 8088 
+      wget -q --no-cache -O /tmp/edgeshark.sh https://github.com/siemens/edgeshark/raw/main/deployments/nocomposer/edgeshark.sh
+      chmod +x /tmp/edgeshark.sh
+      
+      # Run Edgeshark installation script.
+      if ! DOCKER_DEFAULT_PLATFORM= bash /tmp/edgeshark.sh up; then
+          echo "Edgeshark installation failed."
+          exit 1
+      fi
+
+      # Start the web1 container (Nginx).
+      if ! docker run -d --name web1 -p 8081:80 -v /home/vagrant/services/web1:/usr/share/nginx/html:ro nginx:alpine; then
+          echo "Failed to start web1 container."
+          exit 1
+      fi
+
+      # Start the web2 container (Nginx).
+      if ! docker run -d --name web2 -p 8082:80 -v /home/vagrant/services/web2:/usr/share/nginx/html:ro nginx:alpine; then
+          echo "Failed to start web2 container."
+          exit 1
+      fi
+      # Set appropriate permissions
+      #sudo chmod 644 /etc/bind/zones/db.yfrancois.webserver.com
+      sudo chmod 644 /etc/bind/named.conf.local
+      systemctl restart bind9
+      
+      ip route del default
+      ip route add default via 192.169.1.1 #default route to the edge router
+SHELL
+end
+  # Define LAN client
+  config.vm.define "lan-client" do |client|
+    client.vm.box = "debian/bullseye64"
+    client.vm.hostname = "lan-client"
+    client.vm.network "private_network", ip: "42.42.42.100", virtualbox__intnet: "LAN"
+    #client.vm.network "private_network", type: "dhcp", virtualbox__intnet: "LAN"
+    client.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y curl w3m dnsutils wireshark-gtk
+        #wireshark
+      tasksel install xfce-desktop
+      echo "nameserver 192.169.1.20" > /etc/resolv.conf # static DNS server 
+      #ip route del default via 
+      ip route add default via 42.42.42.1 # static default GW
+      # Add routes for services
+      ip route add 192.168.1.0/24 via 42.42.42.1
+    SHELL
+  end
+end
