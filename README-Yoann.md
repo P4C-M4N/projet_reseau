@@ -88,13 +88,12 @@ graph TB
 
         subgraph DMZ[DMZ: 192.169.1.0/24]
             style DMZ fill:#fff0e6,stroke:#333,stroke-width:4px
-            Services[Services VM<br>192.169.1.20]
+            Services[Services VM (Bind9)<br>192.169.1.20]
             subgraph DockerServices[Docker Services]
                 style DockerServices fill:#e6ffe6,stroke:#333,stroke-width:2px
                 Web1["Web1<br>Port: 8081"]
                 Web2["Web2<br>Port: 8082"]
                 Edgeshark["Edgeshark<br>Port: 5001"]
-                DNS["BIND DNS Server"]
             end
         end
 
