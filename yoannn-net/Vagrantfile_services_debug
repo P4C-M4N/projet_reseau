@@ -1,0 +1,122 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = false
+    vb.memory = "8192"
+    vb.cpus = 6
+    vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    vb.customize ["modifyvm", :id, "--paravirtprovider", "kvm"]
+  end
+
+  config.ssh.insert_key = false
+  config.vm.boot_timeout = 600
+  config.vm.box_check_update = false
+
+  config.vm.define "services" do |services|
+    services.vm.box = "debian/bullseye64"
+    services.vm.hostname = "services"
+    services.vm.network "private_network", ip: "192.169.1.20", virtualbox__intnet: "DMZ"
+# Set up port forwarding
+    services.vm.network "forwarded_port", guest: 80, host: 8080 # For webserver (Apache)
+    services.vm.network "forwarded_port", guest: 8081, host: 8081 # For web1 (Nginx)
+    services.vm.network "forwarded_port", guest: 8082, host: 8082 # For web2 (Nginx)
+    services.vm.network "forwarded_port", guest: 5353, host: 5353 # For BIND9 DNS service
+    services.vm.network "forwarded_port", guest: 5001, host: 5001 # For Edgeshark
+    services.vm.provision "shell", inline: <<-SHELL
+      # Update and install necessary packages
+      apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release docker.io
+
+      # Add vagrant user to the docker group
+      usermod -aG docker vagrant
+
+      # Create necessary directories for services
+      mkdir -p /home/vagrant/services/web1 /home/vagrant/services/web2 /home/vagrant/services/webserver /home/vagrant/services/bind9
+      
+      # Install Edgeshark using the provided bash script instead of Docker Compose
+    wget -q --no-cache -O /tmp/edgeshark.sh https://github.com/siemens/edgeshark/raw/main/deployments/nocomposer/edgeshark.sh
+    chmod +x /tmp/edgeshark.sh
+    DOCKER_DEFAULT_PLATFORM= bash /tmp/edgeshark.sh up
+
+      # Start the web1 container (Nginx)
+      docker run -d \
+        --name web1 \
+        -p 8081:80 \
+        -v /home/vagrant/services/web1:/usr/share/nginx/html:ro \
+        nginx:alpine
+
+      # Start the web2 container (Nginx)
+      docker run -d \
+        --name web2 \
+        -p 8082:80 \
+        -v /home/vagrant/services/web2:/usr/share/nginx/html:ro \
+        nginx:alpine
+
+      # Start the webserver container (Apache)
+      docker run -d \
+        --name webserver \
+        -p 8080:80 \
+        -v /home/vagrant/services/webserver:/usr/local/apache2/htdocs/ \
+        httpd:2.4
+
+      # Start the bind9 container
+      docker run -d \
+        --name bind9 \
+        -p 53:53/tcp \
+        -p 53:53/udp \
+        -v /home/vagrant/services/bind9:/etc/bind \
+        -e TZ=UTC \
+        ubuntu/bind9
+
+      # Create index.html files for each service.
+      echo "<h1>Welcome to Web Server</h1>" > /home/vagrant/services/web1/index.html 
+      echo "<h1>Welcome to Web Server</h1>" > /home/vagrant/services/web2# Set up port forwarding
+    services.vm.network "forwarded_port", guest: 80, host: 8080 # For webserver (Apache)
+    services.vm.network "forwarded_port", guest: 8081, host: 8081 # For web1 (Nginx)
+    services.vm.network "forwarded_port", guest: 8082, host: 8082 # For web2 (Nginx)
+    services.vm.network "forwarded_port", guest: 53, host: 53 # For BIND9 DNS service
+    services.vm.network "forwarded_port", guest: 5001, host: 5001 # For Edgeshark/index.html 
+      echo "<h1>Welcome to Web Server</h1>" > /home/vagrant/services/webserver/index.html 
+
+      # Setup BIND9 configuration files.
+      cat > /home/vagrant/services/bind9/named.conf.local <<EOL 
+zone "example.com" { 
+   type master; 
+   file "/etc/bind/db.example.com"; 
+}; 
+
+zone "1.169.192.in-addr.arpa" { 
+   type master; 
+   file "/etc/bind/db.192.169.1"; 
+}; 
+
+zone "42.42.42.in-addr.arpa" { 
+   type master; 
+   file "/etc/bind/db.42.42.42"; 
+}; 
+EOL 
+
+cat > /home/vagrant/services/bind9/db.example.com <<EOL 
+\$TTL   604800 
+@       IN     SOA     ns1.example.com. admin.example.com. ( 
+                  3     ; Serial 
+             604800     ; Refresh 
+              86400     ; Retry 
+            2419200     ; Expire 
+             604800 )   ; Negative Cache TTL 
+
+@       IN     NS       ns1.example.com.
+ns1     IN     A       192.169.1.20 
+nginx   IN     A       192.169.1.10 
+web1   IN     A       192.169.1.20 
+web2   IN     A       192.169.1.20 
+webserver IN     A       192.169.1.20 
+EOL 
+
+chown -R vagrant:vagrant /home/vagrant/services 
+
+SHELL
+end
+
+end

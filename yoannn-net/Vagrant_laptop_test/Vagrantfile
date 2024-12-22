@@ -1,0 +1,254 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = false
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+  config.ssh.insert_key = false
+  config.vm.boot_timeout = 600
+  config.vm.box_check_update = false
+
+  # Define the edge-router VM
+  config.vm.define "edge-router" do |router|
+    router.vm.box = "debian/bookworm64"
+    router.vm.hostname = "edge-router"
+    router.vm.network "public_network"
+    router.vm.network "private_network", ip: "192.169.1.1", virtualbox__intnet: "DMZ"
+    router.vm.network "private_network", ip: "42.42.42.1", virtualbox__intnet: "LAN"
+
+    router.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y nftables
+
+      echo "net.ipv4.ip_forward=1" | tee -a /etc/sysctl.conf
+      sysctl -p
+
+      # Configure nftables
+      cat > /etc/nftables.conf <<EOL
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table ip nat {
+    chain postrouting {
+        type nat hook postrouting priority 100;
+        oifname "eth0" masquerade
+    }
+}
+
+table ip filter {
+    chain input {
+        type filter hook input priority 0;
+        ct state established,related accept
+        ct state invalid drop
+        drop
+    }
+
+    chain forward {
+        type filter hook forward priority 0;
+        ct state established,related accept
+        iifname "eth2" oifname "eth1" accept
+        iifname "eth1" oifname "eth0" accept
+        iifname "eth1" oifname "eth2" drop
+        iifname "eth0" oifname "eth1" tcp dport 80 accept
+        drop
+    }
+
+    chain output {
+        type filter hook output priority 0;
+    }
+}
+EOL
+
+      # Enable and start nftables service
+      systemctl enable nftables
+      systemctl start nftables
+
+      # Load the nftables rules
+      nft -f /etc/nftables.conf
+    SHELL
+  end
+
+  # Define the nginx-proxy VM
+  config.vm.define "nginx-proxy" do |proxy|
+    proxy.vm.box = "debian/bullseye64"
+    proxy.vm.hostname = "nginx-proxy"
+    proxy.vm.network "private_network", ip: "192.169.1.10", virtualbox__intnet: "DMZ"
+
+    proxy.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y docker.io docker-compose
+      usermod -aG docker vagrant
+
+      mkdir -p /home/vagrant/nginx-proxy
+      cat > /home/vagrant/nginx-proxy/docker-compose.yml <<EOL
+version: '3'
+
+services:
+  nginx-proxy:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+EOL
+
+      cat > /home/vagrant/nginx-proxy/nginx.conf <<EOL
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream web1 {
+        server 192.169.1.20:8081;
+    }
+
+    upstream web2 {
+        server 192.169.1.20:8082;
+    }
+
+    upstream webserver {
+        server 192.169.1.20:8080;
+    }
+
+    server {
+        listen 80;
+        server_name my.nginx;
+
+        location / {
+            proxy_pass http://web1;
+        }
+    }
+
+    server {
+        listen 80;
+        server_name my.nginx2;
+
+        location / {
+            proxy_pass http://web2;
+        }
+    }
+
+    server {
+        listen 80;
+        server_name my.webserver;
+
+        location / {
+            proxy_pass http://webserver;
+        }
+    }
+}
+EOL
+
+      chown -R vagrant:vagrant /home/vagrant/nginx-proxy
+      su - vagrant -c "cd /home/vagrant/nginx-proxy && docker-compose up -d"
+    SHELL
+  end
+
+  # Define the services VM with Edgeshark and other services.
+  config.vm.define "services" do |services|
+    services.vm.box = "debian/bullseye64"
+    services.vm.hostname = "services"
+    services.vm.network "private_network", ip: "192.169.1.20", virtualbox__intnet: "DMZ"
+
+    # Set up port forwarding for services in this VM.
+    services.vm.network "forwarded_port", guest: 80, host: 8080 # For webserver (Apache)
+    services.vm.network "forwarded_port", guest: 8081, host: 8081 # For web1 (Nginx)
+    services.vm.network "forwarded_port", guest: 8082, host: 8082 # For web2 (Nginx)
+    services.vm.network "forwarded_port", guest: 5353, host: 5353 # For BIND9 DNS service
+    services.vm.network "forwarded_port", guest: 5001, host: 5001 # For Edgeshark
+
+    services.vm.provision "shell", inline: <<-SHELL
+      # Update and install necessary packages.
+      apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release docker.io
+
+      # Add vagrant user to the docker group.
+      usermod -aG docker vagrant
+      
+      # Create necessary directories for services.
+      mkdir -p /home/vagrant/services/web1 /home/vagrant/services/web2 /home/vagrant/services/webserver /home/vagrant/services/bind9
+      
+      # Install Edgeshark using the provided bash script instead of Docker Compose.
+      wget -q --no-cache -O /tmp/edgeshark.sh https://github.com/siemens/edgeshark/raw/main/deployments/nocomposer/edgeshark.sh
+      chmod +x /tmp/edgeshark.sh
+      
+      # Run Edgeshark installation script.
+      if ! DOCKER_DEFAULT_PLATFORM= bash /tmp/edgeshark.sh up; then
+          echo "Edgeshark installation failed."
+          exit 1
+      fi
+
+      # Start the web1 container (Nginx).
+      if ! docker run -d --name web1 -p 8081:80 -v /home/vagrant/services/web1:/usr/share/nginx/html:ro nginx:alpine; then
+          echo "Failed to start web1 container."
+          exit 1
+      fi
+
+      # Start the web2 container (Nginx).
+      if ! docker run -d --name web2 -p 8082:80 -v /home/vagrant/services/web2:/usr/share/nginx/html:ro nginx:alpine; then
+          echo "Failed to start web2 container."
+          exit 1
+      fi
+
+      # Start the webserver container (Apache).
+      if ! docker run -d --name webserver -p 8080:80 -v /home/vagrant/services/webserver:/usr/local/apache2/htdocs/ httpd:2.4; then
+          echo "Failed to start webserver container."
+          exit 1
+      fi
+
+      # Start the bind9 container on a different port (5353).
+      if ! docker run -d --name bind9 -p 5353:53/tcp -p 5353:53/udp -v /home/vagrant/services/bind9:/etc/bind -e TZ=UTC ubuntu/bind9; then
+          echo "Failed to start bind9 container."
+          exit 1
+      fi
+
+      # Create index.html files for each service.
+      echo "<h1>Welcome to Web Server</h1>" > /home/vagrant/services/web1/index.html 
+      echo "<h1>Welcome to Web Server</h1>" > /home/vagrant/services/web2/index.html 
+      echo "<h1>Welcome to Web Server</h1>" > /home/vagrant/services/webserver/index.html 
+
+      # Setup BIND9 configuration files.
+      cat > /home/vagrant/services/bind9/named.conf.local <<EOL 
+zone "example.com" { 
+   type master; 
+   file "/etc/bind/db.example.com"; 
+}; 
+
+zone "1.169.192.in-addr.arpa" { 
+   type master; 
+   file "/etc/bind/db.192.169.1"; 
+}; 
+
+zone "42.42.42.in-addr.arpa" { 
+   type master; 
+   file "/etc/bind/db.42.42.42"; 
+}; 
+EOL 
+
+cat > /home/vagrant/services/bind9/db.example.com <<EOL 
+\$TTL   604800 
+@       IN     SOA     ns1.example.com. admin.example.com. ( 
+                  3     ; Serial 
+             604800     ; Refresh 
+              86400     ; Retry 
+            2419200     ; Expire 
+             604800 )   ; Negative Cache TTL 
+
+@       IN     NS       ns1.example.com.
+ns1     IN     A       192.169.1.20 
+nginx   IN     A       192.169.1.10 
+web1   IN     A       192.169.1.20 
+web2   IN     A       192.169.1.20 
+webserver IN     A       192.169.1.20 
+EOL 
+
+chown -R vagrant:vagrant /home/vagrant/services 
+
+SHELL
+end
+
+end
