@@ -1,9 +1,10 @@
 # README
 
-This project was carried out as part of the first-semester networking project in the FISA-SN program at INP-ENSEEIHT.
+(N5AN01B - Protocoles de l'Internet - Mise en place d’un réseau « d’entreprise »)
+
+This project was carried out as part of the fifth-semester networking project in the FISA-SN program at INP-ENSEEIHT.
 
 This branch corresponds to the work conducted by **Thomas Silvestre**, **Yoann François**, and **Pierre Chaveroux**.
-
 Details about each individual's network infrastructure can be found in their dedicated README files:
 
 - Thomas's architecture: [README-Thomas.md](README-Thomas.md)
