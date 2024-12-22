@@ -10,7 +10,7 @@ This branch corresponds to the individual work carried out by **Pierre Chaveroux
 
 Below is an illustration of my implemented network architecture: 
 
-![Network_Architecture](Ressources_&_Configurations-P.Chaveroux/ressources/pchaveroux_architecture.jpg)
+![Network_Architecture](pierre-net/ressources/pchaveroux_architecture.jpg)
 
 ---
 
@@ -101,15 +101,15 @@ Configuration files are available in the annex for further technical insight.
 ## Technical Documentation
 
 Detailed configurations for each device: 
-- **Client #1 (Administration)**: [cubuntu1](Ressources_&_Configurations-P.Chaveroux/configuration_files/cubuntu1.md). 
-- **Client #2 (Employees)**: [cubuntu2](Ressources_&_Configurations-P.Chaveroux/configuration_files/cubuntu2.md). 
-- **Router #1 (Private Network + DHCP)**: [rubuntu1](Ressources_&_Configurations-P.Chaveroux/configuration_files/rubuntu1.md). 
-- **Router #2 (Public Network + Proxy + Firewall)**: [rubuntu2](Ressources_&_Configurations-P.Chaveroux/configuration_files/rubuntu2.md). 
-- **Web Server**: [subuntu1](Ressources_&_Configurations-P.Chaveroux/configuration_files/subuntu1.md). 
-- **DNS Server**: [subuntu2](Ressources_&_Configurations-P.Chaveroux/configuration_files/subuntu2.md). 
-- **Fallback DNS Server**: [subuntu3](Ressources_&_Configurations-P.Chaveroux/configuration_files/subuntu3.md). 
+- **Client #1 (Administration)**: [cubuntu1](pierre-net/configuration_files/cubuntu1.md). 
+- **Client #2 (Employees)**: [cubuntu2](pierre-net/configuration_files/cubuntu2.md). 
+- **Router #1 (Private Network + DHCP)**: [rubuntu1](pierre-net/configuration_files/rubuntu1.md). 
+- **Router #2 (Public Network + Proxy + Firewall)**: [rubuntu2](pierre-net/configuration_files/rubuntu2.md). 
+- **Web Server**: [subuntu1](pierre-net/configuration_files/subuntu1.md). 
+- **DNS Server**: [subuntu2](pierre-net/configuration_files/subuntu2.md). 
+- **Fallback DNS Server**: [subuntu3](pierre-net/configuration_files/subuntu3.md). 
 
-TCPDUMP Command Sheet : [tcpdump](Ressources_&_Configurations-P.Chaveroux/ressources/tcpdump_sheet.md).
+TCPDUMP Command Sheet : [tcpdump](pierre-net/ressources/tcpdump_sheet.md).
 
 ---
 
