@@ -47,9 +47,9 @@ graph TB
         end
     end
 
-    WANRouter <==> EdgeRouter
-    EdgeRouter <==> Client
-    EdgeRouter <==> Services
+    WAN <==> Interco
+    Interco <==> LAN
+    Interco <==> DMZ
     Services --- DockerServices
     DockerServices --- Web1 & Web2 & Edgeshark
     VF1 -.-> EdgeRouter
