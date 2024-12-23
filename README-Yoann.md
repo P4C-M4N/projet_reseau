@@ -120,5 +120,10 @@ I chose to use a mix of both virtualbox and docker in deployment, docker hosting
 ### Issues
 I had trouble getting to know the specificities of Vagrant. Due to some outdated images at first, I had many issues with packages, making me use nftables as an alternative to iptables for some time before I found a fix to it.
 
-When it came to interconnecting ourselves, we encountered issues with DNS and the fallback method. Pierre is the one who found the solution to this issue in one of the parameters of the config file. Props to him !
+When it came to interconnecting ourselves, we encountered issues with DNS and the fallback method. Pierre is the one who found the solution to this issue in one of the parameters of the config file. Props to him ! (See his part in the "Fallback DNS setup" section)
+
+### Improvements
+Security is key ! Why not try and deploy a SIEM solution to aggregate log sources and try and simulate a live intrusion ?
+For something less sophisticated, implementing 802.1x authentication could be an interesting next step as to seggregate access based on user identity and not just IP addresses.
+
 
