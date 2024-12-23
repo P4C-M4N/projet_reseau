@@ -113,7 +113,9 @@ I chose to use a mix of both virtualbox and docker in deployment, docker hosting
 
 
 #### Issues
+I had trouble getting to know the specificities of Vagrant. Due to some outdated images at first, I had many issues with packages, making me use nftables as an alternative to iptables for some time before I found a fix to it.
 
+When it came to interconnecting ourselves, we encountered issues with DNS and the fallback method. Pierre is the one who found the solution to this issue in one of the parameters of the config file. Props to him !
 
 ## Vagrantfile
 
