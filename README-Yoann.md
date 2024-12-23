@@ -1,9 +1,9 @@
 ## Yoann's network
 
-Dynamic deployment of the "entreprise network" using **vagrant, virtualbox and docker**.
+Dynamic deployment of my part of the "entreprise network" using **vagrant, virtualbox and docker**.
 
 ### How-to :
-Do "sudo vagrant up" in the folder of the "Vagrantfile" order to deploy the LAN architecture.
+Do "sudo vagrant up" in the folder of the "Vagrantfile" in order to deploy the LAN architecture.
 
 ### Technical choices : 
 #### Deployment
@@ -16,6 +16,7 @@ The commented Vagrantfile contains the project, an introduction to "entreprise a
 The following method also offered some reassurance as we knew that if something would fail (perhaps a corrupted VM), we would have the Vagrantfile as a Source of Truth when it came to the multiple configurations of our devices and hosts.
 
 I chose to use a mix of both virtualbox and docker in deployment, docker hosting web services while the rest is deployed in VMs for ease of configuration on critical services (DNS and Reverse Proxy).
+
 #### Services choices
 | Service Name       | Description                                    | Reason for Choice |
 |--------------------|------------------------------------------------|-------------------|
@@ -43,18 +44,6 @@ I chose to use a mix of both virtualbox and docker in deployment, docker hosting
 
 #### Issues
 
-
-### Tasks : 
-DONE :
-  - Base Vagrantfile
-  - Base schema with mermaid.js
-
-TO DO :
-  - High level schema draw.io
-  - Add comments
-  - Edit Readme
-  - Ensure connectivity in the LAN
-  - Test and PoC of Reverse Proxy
     
 [Static schema](yoannn-net/schema_mermaid.png)
 
