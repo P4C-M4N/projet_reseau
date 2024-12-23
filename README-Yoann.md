@@ -72,6 +72,11 @@ flowchart TB
     style VagrantFile fill:#fff0e6,stroke:#333,stroke-width:4px
 ```
 
+## Vagrantfile (iptables config, DNS, DHCP, and many more...)
+
+You can view the Vagrantfile [here](./yoannn-net/Vagrantfile).
+It is commented and easily understandable, centralizing the whole LAN configuration.
+
 ### How-to :
 Do "sudo vagrant up" in the folder of the "Vagrantfile" in order to deploy the LAN architecture.
 
@@ -116,9 +121,4 @@ I chose to use a mix of both virtualbox and docker in deployment, docker hosting
 I had trouble getting to know the specificities of Vagrant. Due to some outdated images at first, I had many issues with packages, making me use nftables as an alternative to iptables for some time before I found a fix to it.
 
 When it came to interconnecting ourselves, we encountered issues with DNS and the fallback method. Pierre is the one who found the solution to this issue in one of the parameters of the config file. Props to him !
-
-## Vagrantfile
-
-You can view the Vagrantfile [here](./yoannn-net/Vagrantfile).
-It is commented and easily understandable, centralizing the whole LAN configuration.
 
