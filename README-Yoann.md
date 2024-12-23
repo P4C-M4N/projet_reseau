@@ -77,7 +77,7 @@ graph TB
 
         subgraph DMZ[DMZ: 192.169.1.0/24]
             style DMZ fill:#fff0e6,stroke:#333,stroke-width:4px
-            Services[ServicesVM_Bind9<br>192.169.1.20]
+            Services[ServicesVM_WithBind9DNS<br>192.169.1.20]
             subgraph DockerServices[Docker Services]
                 style DockerServices fill:#e6ffe6,stroke:#333,stroke-width:2px
                 Web1["Web1<br>Port: 8081"]
@@ -96,7 +96,7 @@ graph TB
     EdgeRouter <==> Client
     EdgeRouter <==> Services
     Services --- DockerServices
-    DockerServices --- Web1 & Web2 & Edgeshark & DNS
+    DockerServices --- Web1 & Web2 & Edgeshark
     VF1 -.-> EdgeRouter
     VF2 -.-> Services
     VF3 -.-> Client
