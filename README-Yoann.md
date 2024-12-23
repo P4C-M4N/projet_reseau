@@ -3,64 +3,73 @@
 Dynamic deployment of my part of the "entreprise network" using **vagrant, virtualbox and docker**.
 
 ```mermaid
-graph TB
-    subgraph VagrantFile[VagrantFile Deployment]
-        direction TB
-        style VagrantFile fill:#fff0e6,stroke:#333,stroke-width:4px
-        VF1["config.vm.define 'edge-router'"]
-        VF2["config.vm.define 'services'"]
-        VF3["config.vm.define 'lan-client'"]
-    end
-
-    subgraph PersonalNetwork[Personal Network Topology]
-        direction TB
-        subgraph WAN[WAN: 150.150.150.0/24]
-            style WAN fill:#e6f3ff,stroke:#333,stroke-width:4px
-            WANRouter[WAN Routers]
-        end
-
-        subgraph Interco[Interco]
-            style Interco fill:#e6f3ff,stroke:#333,stroke-width:4px
-            EdgeRouter[Edge Router<br>WAN: 150.150.150.3<br>DMZ: 192.169.1.1<br>LAN: 42.42.42.1]
-            subgraph RouterServices[Router Services]
-                style RouterServices fill:#e6ffe6,stroke:#333,stroke-width:2px
-                NginxProxy["Nginx Reverse Proxy<br>Port: 80"]
-                IPTables["IPTables"]
-                DHCP["DHCP Server<br>LAN Range: 42.42.42.100-254"]
-            end
-        end
-
-        subgraph DMZ[DMZ: 192.169.1.0/24]
-            style DMZ fill:#fff0e6,stroke:#333,stroke-width:4px
-            Services[ServicesVM_WithBind9DNS<br>192.169.1.20]
-            subgraph DockerServices[Docker Services]
-                style DockerServices fill:#e6ffe6,stroke:#333,stroke-width:2px
-                Web1["Web1<br>Port: 8081"]
-                Web2["Web2<br>Port: 8082"]
-                Edgeshark["Edgeshark<br>Port: 5001"]
-            end
-        end
-
-        subgraph LAN[LAN: 42.42.42.0/24]
-            style LAN fill:#ffe6e6,stroke:#333,stroke-width:4px
-            Client[LAN Client<br>42.42.42.100]
-        end
-    end
-
-    WAN <==> Interco
-    Interco <==> LAN
-    Interco <==> DMZ
+flowchart TB
+ subgraph VagrantFile["VagrantFile Deployment"]
+    direction TB
+        VF1@{ label: "config.vm.define 'edge-router'" }
+        VF2@{ label: "config.vm.define 'services'" }
+        VF3@{ label: "config.vm.define 'lan-client'" }
+  end
+ subgraph WAN["WAN: 150.150.150.0/24"]
+        WANRouter["WAN Routers"]
+  end
+ subgraph RouterServices["Router Services"]
+        NginxProxy["Nginx Reverse Proxy<br>Port: 80"]
+        IPTables["IPTables"]
+        DHCP["DHCP Server<br>LAN Range: 42.42.42.100-254"]
+  end
+ subgraph Interco["Interco"]
+        EdgeRouter["Edge Router<br>WAN: 150.150.150.3<br>DMZ: 192.169.1.1<br>LAN: 42.42.42.1"]
+        RouterServices
+  end
+ subgraph DockerServices["Docker Services"]
+        Web1["Web1<br>Port: 8081"]
+        Web2["Web2<br>Port: 8082"]
+        Edgeshark["Edgeshark<br>Port: 5001"]
+  end
+ subgraph DMZ["DMZ: 192.169.1.0/24"]
+        Services["ServicesVM_WithBind9DNS<br>192.169.1.20"]
+        DockerServices
+  end
+ subgraph LAN["LAN: 42.42.42.0/24"]
+        Client["LAN Client<br>42.42.42.100"]
+  end
+ subgraph s1["Yoann-SAS"]
+        DMZ
+        LAN
+  end
+ subgraph PersonalNetwork["Personal Network Topology"]
+    direction TB
+        WAN
+        Interco
+        s1
+  end
+    WANRouter <==> EdgeRouter
+    EdgeRouter <==> Client & Services
     Services --- DockerServices
     DockerServices --- Web1 & Web2 & Edgeshark
     VF1 -.-> EdgeRouter
     VF2 -.-> Services
     VF3 -.-> Client
+    DHCP --> LAN
 
-    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px,color:black;
-    classDef vagrantFile fill:#fff0e6,stroke:#333,stroke-width:4px,color:black;
-    
-    class DMZ,LAN,WAN default;
-    class VagrantFile,Interco default;
+    VF1@{ shape: rect}
+    VF2@{ shape: rect}
+    VF3@{ shape: rect}
+     DMZ:::default
+     LAN:::default
+     WAN:::default
+     Interco:::default
+     VagrantFile:::default
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px,color:black
+    classDef vagrantFile fill:#fff0e6,stroke:#333,stroke-width:4px,color:black
+    style RouterServices fill:#e6ffe6,stroke:#333,stroke-width:2px
+    style DockerServices fill:#e6ffe6,stroke:#333,stroke-width:2px
+    style DMZ fill:#fff0e6,stroke:#333,stroke-width:4px
+    style LAN fill:#ffe6e6,stroke:#333,stroke-width:4px
+    style WAN fill:#E1BEE7,stroke:#333,stroke-width:4px
+    style Interco fill:#e6f3ff,stroke:#333,stroke-width:4px
+    style VagrantFile fill:#fff0e6,stroke:#333,stroke-width:4px
 ```
 
 ### How-to :
