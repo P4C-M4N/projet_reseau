@@ -1,4 +1,4 @@
-## Yoann's network
+# Yoann's network
 
 Dynamic deployment of my part of the "entreprise network" using **vagrant, virtualbox and docker**.
 
@@ -80,8 +80,8 @@ It is commented and easily understandable, centralizing the whole LAN configurat
 ### How-to :
 Do "sudo vagrant up" in the folder of the "Vagrantfile" in order to deploy the LAN architecture.
 
-### Technical choices : 
-#### Deployment
+## Technical choices : 
+### Deployment
 I decided to use **Vagrant** as to introduce myself to the world of Infrastructure as Code. It is not efficient in the context of a small deployment as in this project. However, it was a way for me to further discover the "DevOps" culture and technical history background as it is my current job role.
 
 This method has its virtues as, I believe, declarative configuration is somewhat superior to the imperative way of working. It allows for easier management and checks through versionning. It improves readability whilst making knowledge persistence and teaching far easier. 
@@ -92,7 +92,7 @@ The following method also offered some reassurance as we knew that if something 
 
 I chose to use a mix of both virtualbox and docker in deployment, docker hosting web services while the rest is deployed in VMs for ease of configuration on critical services (DNS and Reverse Proxy).
 
-#### Services choices
+### Services choices
 | Service Name       | Description                                    | Reason for Choice |
 |--------------------|------------------------------------------------|-------------------|
 | Nginx Reverse Proxy| Proxy for routing requests to services         | Mainstream reverse-proxy. Used it instead of Traefik for ease of use and lots of tutorials on the web.  |
@@ -103,7 +103,7 @@ I chose to use a mix of both virtualbox and docker in deployment, docker hosting
 | BIND DNS Server    | DNS service for name resolution                | Enables custom domain name resolution within the network. Textbook choice. |
 | IPTables           | Firewall and NAT service                       | Essential for network security and routing between subnets. Used nftables at first but changed back to iptables for uniformity. |
 
-#### Services Topology
+### Services Topology
 | Service Name       | Description                                    | IP Address         | Ports              |
 |--------------------|------------------------------------------------|---------------------|--------------------|
 | **LAN Client**      | Client in the LAN network                       | 42.42.42.100       | -                  |
@@ -117,7 +117,7 @@ I chose to use a mix of both virtualbox and docker in deployment, docker hosting
 | **->BIND DNS Server** | DNS service for name resolution                 | 192.169.1.20       | Port 53            |
 
 
-#### Issues
+### Issues
 I had trouble getting to know the specificities of Vagrant. Due to some outdated images at first, I had many issues with packages, making me use nftables as an alternative to iptables for some time before I found a fix to it.
 
 When it came to interconnecting ourselves, we encountered issues with DNS and the fallback method. Pierre is the one who found the solution to this issue in one of the parameters of the config file. Props to him !
