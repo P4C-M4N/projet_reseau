@@ -77,10 +77,10 @@ flowchart TB
 You can view the Vagrantfile [here](./yoannn-net/Vagrantfile).
 It is commented and easily understandable, centralizing the whole LAN configuration.
 
-### How-to :
+### How-to
 Do "sudo vagrant up" in the folder of the "Vagrantfile" in order to deploy the LAN architecture.
 
-## Technical choices : 
+## Technical choices
 ### Deployment
 I decided to use **Vagrant** as to introduce myself to the world of Infrastructure as Code. It is not efficient in the context of a small deployment as in this project. However, it was a way for me to further discover the "DevOps" culture and technical history background as it is my current job role.
 
